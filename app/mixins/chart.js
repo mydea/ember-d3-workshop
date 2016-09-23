@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import d3 from 'd3';
+import $ from 'jquery';
 
 export default Ember.Mixin.create({
   data: [],
@@ -26,7 +27,7 @@ export default Ember.Mixin.create({
     left: 60
   },
 
-  xScale: Ember.computed(function() {
+  xScale: Ember.computed('data.[]', 'chartWidth', function() {
     var data = this.get('data');
     var width = this.get('chartWidth');
 
@@ -37,7 +38,7 @@ export default Ember.Mixin.create({
       .paddingInner(0.3);
   }),
 
-  yScale: Ember.computed(function() {
+  yScale: Ember.computed('data.[]', 'chartHeight', function() {
     var data = this.get('data');
     var height = this.get('chartHeight');
 
@@ -144,6 +145,27 @@ export default Ember.Mixin.create({
     this.drawData();
   },
 
+  updateChartSize() {
+    this.notifyPropertyChange('chartWidth');
+    this.createChart();
+  },
+
+  addResizeListener() {
+    var _this = this;
+
+    // Debounce the handler
+    // This prevents the chart from being re-rendert all the time
+    var _resizeHandler = function() {
+      Ember.run.debounce(_this, _this.updateChartSize, 200);
+    };
+
+    $(window).on(`resize.${this.get('elementId')}`, _resizeHandler);
+  },
+
+  removeResizeListener() {
+    $(window).off(`resize.${this.get('elementId')}`);
+  },
+
   // -----------------------------------------------------------------------
   // LIFECYCLE HOOKS
   // These are special functions that are called by ember at different stages
@@ -152,5 +174,12 @@ export default Ember.Mixin.create({
 
   didInsertElement: function() {
     this.createChart();
+
+    // Add a resize listener
+    this.addResizeListener();
+  },
+
+  willDestroyElement() {
+    this.removeResizeListener();
   }
 });

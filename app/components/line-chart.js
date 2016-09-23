@@ -13,7 +13,7 @@ export default Ember.Component.extend(ChartMixin, {
       return i;
     });
 
-    var widthPiece = width / positions.length;
+    var widthPiece = width / (positions.length - 1);
     var positionPoints = positions.map(function(position) {
       return widthPiece * position;
     });
