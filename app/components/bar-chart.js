@@ -25,13 +25,37 @@ export default Ember.Component.extend({
     return this.$().width();
   }),
 
+  xScale: Ember.computed(function() {
+    var data = this.get('data');
+    var width = this.get('chartWidth');
+
+    return d3.scaleBand()
+      .domain(data.mapBy('name'))
+      .range([0, width])
+      .paddingOuter(1)
+      .paddingInner(0.3);
+  }),
+
+  yScale: Ember.computed(function() {
+    var data = this.get('data');
+    var height = this.get('chartHeight');
+
+    var allValues = d3.extent(data, function(d) {
+      return d.value;
+    });
+
+    return d3.scaleLinear()
+      .domain(allValues)
+      .range([height, 0]);
+  }),
+
   // -----------------------------------------------------------------------
   // METHODS
   // -----------------------------------------------------------------------
 
   addSVG: function() {
     var el = this.$().get(0); // Get the actual DOM node, not the jQuery element
-    var height = this.get('chartHeight');
+    var height = this.get('chartHeight') + 100;
     var width = this.get('chartWidth');
 
     var svg = d3.select(el).append('svg')
@@ -44,27 +68,38 @@ export default Ember.Component.extend({
     this.set('chartSVG', svg);
   },
 
+  createXAxisElement: function() {
+    let svg = this.get('chartSVG');
+    var scale = this.get('xScale');
+    let height = this.get('chartHeight');
+
+    var xAxis = d3.axisBottom(scale)
+      .tickSizeInner(4)
+      .tickSizeOuter(0);
+
+    svg.insert('g', ':first-child')
+      .attr('class', 'chart__axis chart__axis--x')
+      .attr('transform', `translate(0,${height})`)
+      .call(xAxis)
+      .selectAll('text')
+      .style('text-anchor', 'end')
+      .attr('dx', '-.8em')
+      .attr('dy', '.15em')
+      .attr('transform', 'rotate(-45)');
+  },
+
+  createYAxisElement: function() {
+   // TODO: Add y axis
+  },
+
   drawData: function() {
     var color = '#60a425';
 
     var data = this.get('data');
     var height = this.get('chartHeight');
-    var width = this.get('chartWidth');
     var svg = this.get('chartSVG');
-
-    var x = d3.scaleBand()
-      .domain(data.mapBy('name'))
-      .range([0, width])
-      .paddingOuter(1)
-      .paddingInner(0.3);
-
-    var allValues = d3.extent(data, function(d) {
-      return d.value;
-    });
-
-    var y = d3.scaleLinear()
-      .domain(allValues)
-      .range([height, 0]);
+    var x = this.get('xScale');
+    var y = this.get('yScale');
 
     // Select all bars
     var bars = svg
@@ -97,6 +132,10 @@ export default Ember.Component.extend({
 
     // Actually create the SVG element
     this.addSVG();
+
+    // Create the axes
+    this.createXAxisElement();
+    this.createYAxisElement();
 
     // Draw the data
     this.drawData();
