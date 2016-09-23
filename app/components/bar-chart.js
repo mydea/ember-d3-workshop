@@ -4,20 +4,7 @@ import $ from 'jquery';
 
 export default Ember.Component.extend({
 
-  data: [
-    {
-      name: 'John',
-      value: 31
-    },
-    {
-      name: 'Anne',
-      value: 33
-    },
-    {
-      name: 'Robert',
-      value: 28
-    }
-  ],
+  data: [],
 
   chartSVG: null,
   chartContainer: null,
