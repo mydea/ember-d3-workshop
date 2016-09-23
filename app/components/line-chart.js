@@ -39,7 +39,35 @@ export default Ember.Component.extend(ChartMixin, {
   }),
 
   drawData: function() {
-    // TODO: Implement drawData
+    var data = this.get('data');
+    var x = this.get('xScale');
+    var y = this.get('yScale');
+
+    var svg = this.get('chartSVG');
+
+    var line = d3.line()
+      .x(function(d, i) {
+        return x(i);
+      })
+      .y(function(d) {
+        return y(d);
+      });
+
+    var lines = svg
+      .selectAll('.line-chart__line__container')
+      .data(data);
+
+    // Append the new ones
+    lines.enter()
+      .append('g')
+      .attr('class', 'line-chart__line__container')
+      .append('svg:path')
+      .attr('class', 'line-chart__line')
+      .style('stroke', function(d) {
+        return d.color;
+      })
+      .attr('d', (d) => line(d.values))
+      .attr('fill', 'none');
   }
 
 });

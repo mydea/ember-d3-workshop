@@ -1,5 +1,11 @@
 <h1>ember-d3-workshop</h1>
 
+{{#each model.lineChart as |person|}}
+  <span style="color: {{person.color}};">
+    {{person.name}}
+  </span>
+{{/each}}
+
 {{line-chart data=model.lineChart}}
 
 {{bar-chart data=model.barChart}}
