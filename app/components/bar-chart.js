@@ -19,14 +19,20 @@ export default Ember.Component.extend({
     }
   ],
 
+  chartHeight: 400,
+
+  chartWidth: Ember.computed(function() {
+    return this.$().width();
+  }),
+
   // -----------------------------------------------------------------------
   // METHODS
   // -----------------------------------------------------------------------
 
   addSVG: function() {
     var el = this.$().get(0); // Get the actual DOM node, not the jQuery element
-    var height = 400;
-    var width = el.offsetWidth;
+    var height = this.get('chartHeight');
+    var width = this.get('chartWidth');
 
     var svg = d3.select(el).append('svg')
       .attr('class', `chart`)
@@ -39,7 +45,49 @@ export default Ember.Component.extend({
   },
 
   drawData: function() {
-    // TODO: Draw the data
+    var color = '#60a425';
+
+    var data = this.get('data');
+    var height = this.get('chartHeight');
+    var width = this.get('chartWidth');
+    var svg = this.get('chartSVG');
+
+    var x = d3.scaleBand()
+      .domain(data.mapBy('name'))
+      .range([0, width])
+      .paddingOuter(1)
+      .paddingInner(0.3);
+
+    var allValues = d3.extent(data, function(d) {
+      return d.value;
+    });
+
+    var y = d3.scaleLinear()
+      .domain(allValues)
+      .range([height, 0]);
+
+    // Select all bars
+    var bars = svg
+      .selectAll('.bar-chart__bar')
+      .data(data, function(d) {
+        return d.name;
+      });
+
+    // The new ones are appended
+    bars.enter()
+      .append('rect')
+      .attr('class', 'bar-chart__bar')
+      .attr('x', function(d) {
+        return x(d.name) + x.bandwidth() / 3;
+      })
+      .attr('width', x.bandwidth() / 3)
+      .attr('y', function(d) {
+        return y(d.value);
+      })
+      .attr('height', function(d) {
+        return height - y(d.value);
+      })
+      .attr('fill', color);
   },
 
   createChart: function() {
