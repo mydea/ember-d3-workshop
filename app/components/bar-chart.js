@@ -19,11 +19,27 @@ export default Ember.Component.extend({
     }
   ],
 
-  chartHeight: 400,
+  chartSVG: null,
+  chartContainer: null,
+
+  chartHeight: Ember.computed(function() {
+    let height = 400;
+    let margins = this.get('chartMargins');
+    return height - margins.top - margins.bottom;
+  }),
 
   chartWidth: Ember.computed(function() {
-    return this.$().width();
+    let width = this.$().width();
+    let margins = this.get('chartMargins');
+    return width - margins.right - margins.left;
   }),
+
+  chartMargins: {
+    top: 20,
+    right: 20,
+    bottom: 60,
+    left: 60
+  },
 
   xScale: Ember.computed(function() {
     var data = this.get('data');
@@ -55,16 +71,26 @@ export default Ember.Component.extend({
 
   addSVG: function() {
     var el = this.$().get(0); // Get the actual DOM node, not the jQuery element
-    var height = this.get('chartHeight') + 100;
+    var height = this.get('chartHeight');
     var width = this.get('chartWidth');
+    let margins = this.get('chartMargins');
 
-    var svg = d3.select(el).append('svg')
+    let fullWidth = width + margins.left + margins.right;
+    let fullHeight = height + margins.top + margins.bottom;
+
+    // Even though this is the actual SVG element, we will always use the appended
+    // g-Element. This is used to make working with margins easier
+    var container = d3.select(el).append('svg')
       .attr('class', `chart`)
-      .attr('width', width)
-      .attr('height', height)
-      .attr('viewBox', `0 0 ${width} ${height}`)
+      .attr('width', fullWidth)
+      .attr('height', fullHeight)
+      .attr('viewBox', `0 0 ${fullWidth} ${fullHeight}`)
       .attr('preserveAspectRatio', 'xMidYMid');
 
+    let svg = container.append('g')
+      .attr('transform', `translate(${margins.left},${margins.top})`);
+
+    this.set('chartContainer', container);
     this.set('chartSVG', svg);
   },
 
@@ -89,7 +115,28 @@ export default Ember.Component.extend({
   },
 
   createYAxisElement: function() {
-   // TODO: Add y axis
+    let svg = this.get('chartSVG');
+    var scale = this.get('yScale');
+    var ticks = 6;
+
+    var minMax = scale.domain();
+    var diff = minMax[1] - minMax[0];
+    var steps = diff / (ticks - 1);
+
+    var tickValues = [];
+    for (var i = 0; i < ticks; i++) {
+      tickValues.push(minMax[0] + steps * i);
+    }
+
+    var yAxis = d3.axisLeft(scale)
+      .tickValues(tickValues)
+      .tickFormat(d3.format('.0f'))
+      .tickSizeInner(6)
+      .tickSizeOuter(6);
+
+    svg.insert('g', ':first-child')
+      .attr('class', 'chart__axis chart__axis--y')
+      .call(yAxis);
   },
 
   drawData: function() {
