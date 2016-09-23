@@ -19,8 +19,23 @@ export default Ember.Component.extend({
     }
   ],
 
+  // -----------------------------------------------------------------------
+  // METHODS
+  // -----------------------------------------------------------------------
+
   addSVG: function() {
-    // TODO: Generate the base SVG object
+    var el = this.$().get(0); // Get the actual DOM node, not the jQuery element
+    var height = 400;
+    var width = el.offsetWidth;
+
+    var svg = d3.select(el).append('svg')
+      .attr('class', `chart`)
+      .attr('width', width)
+      .attr('height', height)
+      .attr('viewBox', `0 0 ${width} ${height}`)
+      .attr('preserveAspectRatio', 'xMidYMid');
+
+    this.set('chartSVG', svg);
   },
 
   drawData: function() {
