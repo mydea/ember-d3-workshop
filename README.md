@@ -173,7 +173,7 @@ addSVG: function() {
  
  We then save the svg element for later reference.
  
- ### drawData
+### drawData
  
  Next, we want to actually draw the data in the SVG.
  D3 uses a regular coordinate system, where X and Y values can be set in pixels.
