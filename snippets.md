@@ -155,7 +155,7 @@ drawData: function() {
 }
 ```
 
-But how does D3 now if an items is added, removed or changed? 
+But how does D3 know if an items is added, removed or changed? 
 It uses the second argument of the data function for this:
 
 ```js
